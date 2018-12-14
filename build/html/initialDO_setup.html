@@ -1,0 +1,138 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Digital Ocean Initial Server Setup &#8212; Server Manual 0.1 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Creating a New Django Site on DigitalOcean" href="djangoDO_setup.html" />
+    <link rel="prev" title="Welcome to Server Manual’s documentation!" href="index.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="digital-ocean-initial-server-setup">
+<h1>Digital Ocean Initial Server Setup<a class="headerlink" href="#digital-ocean-initial-server-setup" title="Permalink to this headline">¶</a></h1>
+<p>Before we set up the digital ocean server it is recommended that we have our SSH keys ready with us. If they are already created we can use them else we need to create them. Follow this tutorial <a class="reference external" href="https://www.digitalocean.com/community/tutorials/how-to-set-up-ssh-keys-on-ubuntu-1804">how to setup SSH keys</a></p>
+<p>Create the droplet from the console. Upload the SSH Key and use it while generating the droplet. Thus root access will now be set using SSH key. In such a procedure you will not get any mail from digital ocean about password as there is no password based authentication.</p>
+<p>Login using ssh</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ ssh root@droplet-ip-address
+</pre></div>
+</div>
+<p>You will not be prompted to change your password however it is recommended that you set your root password now.</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ passwd
+</pre></div>
+</div>
+<p>An online guide from digital ocean <a class="reference external" href="https://www.digitalocean.com/community/tutorials/initial-server-setup-with-ubuntu-18-04">Initial Server Setup</a> is available that guides you through the process of initial login and setting up including the creation and access configuration of a new sudo user which is going to be actually used for remote logins.</p>
+<p>Using the above guide create a new user with name siteadmin</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ adduser siteadmin
+$ usermod -aG sudo siteadmin
+</pre></div>
+</div>
+<p>Check if firewall allows OpenSSH to connect if not configure it to connect with OpenSSH</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ ufw app list
+$ ufw allow OpenSSH
+$ ufw <span class="nb">enable</span>
+$ ufw status
+</pre></div>
+</div>
+<p>Configure regular user <strong>siteadmin</strong> to use SSH keys without password.</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ rsync --archive --chown<span class="o">=</span>siteadmin:siteadmin ~/.ssh /home/siteadmin
+</pre></div>
+</div>
+<p>Do not exit or close the terminal which you are using with root. In a new terminal login with the new account <strong>siteadmin</strong></p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ ssh siteadmin@droplet-ip-address
+</pre></div>
+</div>
+<p>If you are successfully logged in then the mission is complete.</p>
+<p><a class="reference external" href="https://www.digitalocean.com/community/tutorials/how-to-point-to-digitalocean-nameservers-from-common-domain-registrars">https://www.digitalocean.com/community/tutorials/how-to-point-to-digitalocean-nameservers-from-common-domain-registrars</a></p>
+<p><a class="reference external" href="https://www.digitalocean.com/docs/networking/dns/quickstart/">https://www.digitalocean.com/docs/networking/dns/quickstart/</a></p>
+<p>At your domain registrar site put nameservers of your domain to ns1.digitalocean.com, ns2.digitalocean.com and ns3.digitalocean.com</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ sudo apt update
+$ sudo apt install git
+</pre></div>
+</div>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ <span class="nb">echo</span> <span class="s2">&quot;# vanguard&quot;</span> &gt;&gt; README.md
+$ git init
+$ git add README.md
+$ git commit -m <span class="s2">&quot;first commit&quot;</span>
+$ git remote add origin https://github.com/sandeeprah/vanguard.git
+$ git push -u origin master
+</pre></div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="index.html" title="previous chapter">Welcome to Server Manual’s documentation!</a></li>
+      <li>Next: <a href="djangoDO_setup.html" title="next chapter">Creating a New Django Site on DigitalOcean</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, Sandeep Raheja.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.7</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.8</a>
+      
+      |
+      <a href="_sources/initialDO_setup.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

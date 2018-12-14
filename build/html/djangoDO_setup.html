@@ -1,0 +1,283 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Creating a New Django Site on DigitalOcean &#8212; Server Manual 0.1 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Digital Ocean Initial Server Setup" href="initialDO_setup.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="creating-a-new-django-site-on-digitalocean">
+<h1>Creating a New Django Site on DigitalOcean<a class="headerlink" href="#creating-a-new-django-site-on-digitalocean" title="Permalink to this headline">¶</a></h1>
+<p><a class="reference external" href="https://www.digitalocean.com/community/tutorials/how-to-set-up-django-with-postgres-nginx-and-gunicorn-on-ubuntu-18-04">Online guide to setup Django, Postgres, Nginx</a></p>
+<div class="section" id="setting-up-postgresql-and-django">
+<h2>Setting Up Postgresql and Django<a class="headerlink" href="#setting-up-postgresql-and-django" title="Permalink to this headline">¶</a></h2>
+<p>First login using SSH as siteadmin</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ ssh siteadmin@clappets.com
+</pre></div>
+</div>
+<p>Install all prerequisite for python3 installation</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ sudo apt update
+$ sudo apt install python3-pip python3-dev libpq-dev postgresql postgresql-contrib nginx curl
+</pre></div>
+</div>
+<p>Login as user <em>postgres</em> and issue command <em>psql</em> to start a console to query postgresql</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ sudo -u postgres psql
+</pre></div>
+</div>
+<p>Setup Database by name <strong>vanguard</strong> and Database user by the name <strong>django</strong> and password <strong>abracadabra</strong></p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span><span class="nv">postgres</span><span class="o">=</span><span class="c1"># CREATE DATABASE vanguard;</span>
+<span class="nv">postgres</span><span class="o">=</span><span class="c1"># CREATE USER django WITH PASSWORD &#39;abracadabra&#39;;</span>
+<span class="nv">postgres</span><span class="o">=</span><span class="c1"># ALTER ROLE django SET client_encoding TO &#39;utf8&#39;;</span>
+<span class="nv">postgres</span><span class="o">=</span><span class="c1"># ALTER ROLE django SET default_transaction_isolation TO &#39;read committed&#39;;</span>
+<span class="nv">postgres</span><span class="o">=</span><span class="c1"># ALTER ROLE django SET timezone TO &#39;UTC&#39;;</span>
+<span class="nv">postgres</span><span class="o">=</span><span class="c1"># GRANT ALL PRIVILEGES ON DATABASE vanguard TO django;</span>
+<span class="nv">postgres</span><span class="o">=</span><span class="c1"># \q</span>
+</pre></div>
+</div>
+<p>Upgrade pip and install the package by typing:</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ sudo -H pip3 install --upgrade pip
+$ sudo -H pip3 install virtualenv
+</pre></div>
+</div>
+<p>Make Project Directory and install a virtual environment and install Django, gunicorn, psycopg2</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ mkdir ~/vanguard
+$ <span class="nb">cd</span> ~/vanguard
+$ virtualenv venv
+$ <span class="nb">source</span> venv/bin/activate
+$ pip install django gunicorn psycopg2-binary
+</pre></div>
+</div>
+<p>Make Django Project</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ django-admin.py startproject vanguard ~/vanguard
+$ nano ~/vanguard/vanguard/settings.py
+</pre></div>
+</div>
+<p>change the following in settings.py file</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>. . .
+<span class="nv">ALLOWED_HOSTS</span> <span class="o">=</span> <span class="o">[</span><span class="s1">&#39;clappets.com&#39;</span>, <span class="s1">&#39;IP_Address&#39;</span>, <span class="s1">&#39;localhost&#39;</span>,<span class="s1">&#39;127.0.0.1&#39;</span><span class="o">]</span>
+. . .
+</pre></div>
+</div>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>. . .
+<span class="nv">DATABASES</span> <span class="o">=</span> <span class="o">{</span>
+    <span class="s1">&#39;default&#39;</span>: <span class="o">{</span>
+        <span class="s1">&#39;ENGINE&#39;</span>: <span class="s1">&#39;django.db.backends.postgresql_psycopg2&#39;</span>,
+        <span class="s1">&#39;NAME&#39;</span>: <span class="s1">&#39;vanguard&#39;</span>,
+        <span class="s1">&#39;USER&#39;</span>: <span class="s1">&#39;django&#39;</span>,
+        <span class="s1">&#39;PASSWORD&#39;</span>: <span class="s1">&#39;abracadabra&#39;</span>,
+        <span class="s1">&#39;HOST&#39;</span>: <span class="s1">&#39;localhost&#39;</span>,
+        <span class="s1">&#39;PORT&#39;</span>: <span class="s1">&#39;&#39;</span>,
+    <span class="o">}</span>
+<span class="o">}</span>
+. . .
+</pre></div>
+</div>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>. . .
+<span class="nv">STATIC_URL</span> <span class="o">=</span> <span class="s1">&#39;/static/&#39;</span>
+<span class="nv">STATIC_ROOT</span> <span class="o">=</span> os.path.join<span class="o">(</span>BASE_DIR, <span class="s1">&#39;static/&#39;</span><span class="o">)</span>
+. . .
+</pre></div>
+</div>
+<p>complete the set up</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span><span class="o">(</span>venv<span class="o">)</span>$ ~/vanguard/manage.py makemigrations
+<span class="o">(</span>venv<span class="o">)</span>$ ~/vanguard/manage.py migrate
+<span class="o">(</span>venv<span class="o">)</span>$ ~/vanguard/manage.py createsuperuser
+<span class="o">(</span>venv<span class="o">)</span>$ ~/vanguard/manage.py collectstatic
+</pre></div>
+</div>
+<p>configure the firewall for port 8000 and run the django development server</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span><span class="o">(</span>venv<span class="o">)</span>$ sudo ufw allow <span class="m">8000</span>
+<span class="o">(</span>venv<span class="o">)</span>$ ~/vanguard/manage.py runserver <span class="m">0</span>.0.0.0:8000
+</pre></div>
+</div>
+</div>
+<div class="section" id="configure-gunicorn">
+<h2>Configure Gunicorn<a class="headerlink" href="#configure-gunicorn" title="Permalink to this headline">¶</a></h2>
+<p>Testing Gunicorn</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span><span class="o">(</span>venv<span class="o">)</span>$ <span class="nb">cd</span> ~/vanguard
+<span class="o">(</span>venv<span class="o">)</span>$ gunicorn --bind <span class="m">0</span>.0.0.0:8000 vanguard.wsgi
+<span class="o">(</span>venv<span class="o">)</span>$ deactivate
+</pre></div>
+</div>
+<p>Creating systemd socket file</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ sudo nano /etc/systemd/system/gunicorn_vanguard.socket
+</pre></div>
+</div>
+<p>Put the following contents in the file, save and close</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span><span class="o">[</span>Unit<span class="o">]</span>
+<span class="nv">Description</span><span class="o">=</span>gunicorn socket <span class="k">for</span> vanguard
+
+<span class="o">[</span>Socket<span class="o">]</span>
+<span class="nv">ListenStream</span><span class="o">=</span>/run/gunicorn_vanguard.sock
+
+<span class="o">[</span>Install<span class="o">]</span>
+<span class="nv">WantedBy</span><span class="o">=</span>sockets.target
+</pre></div>
+</div>
+<p>Creating systemd service file</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ sudo nano /etc/systemd/system/gunicorn_vanguard.service
+</pre></div>
+</div>
+<p>Put the following contents in the file, save and close</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span><span class="o">[</span>Unit<span class="o">]</span>
+<span class="nv">Description</span><span class="o">=</span>gunicorn daemon
+<span class="nv">Requires</span><span class="o">=</span>gunicorn_vanguard.socket
+<span class="nv">After</span><span class="o">=</span>network.target
+
+<span class="o">[</span>Service<span class="o">]</span>
+<span class="nv">User</span><span class="o">=</span>siteadmin
+<span class="nv">Group</span><span class="o">=</span>www-data
+<span class="nv">WorkingDirectory</span><span class="o">=</span>/home/siteadmin/vanguard
+<span class="nv">ExecStart</span><span class="o">=</span>/home/siteadmin/vanguard/venv/bin/gunicorn <span class="se">\</span>
+          --access-logfile - <span class="se">\</span>
+          --workers <span class="m">3</span> <span class="se">\</span>
+          --bind unix:/run/gunicorn_vanguard.sock <span class="se">\</span>
+          vanguard.wsgi:application
+
+<span class="o">[</span>Install<span class="o">]</span>
+<span class="nv">WantedBy</span><span class="o">=</span>multi-user.target
+</pre></div>
+</div>
+<p>Start and enable the gunicorn socket</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ sudo systemctl start gunicorn_vanguard.socket
+$ sudo systemctl <span class="nb">enable</span> gunicorn_vanguard.socket
+</pre></div>
+</div>
+<p>Check status and existence of sock file</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ sudo systemctl status gunicorn_vanguard.socket
+$ file /run/gunicorn_vanguard.sock
+$ sudo journalctl -u gunicorn_vanguard.socket
+</pre></div>
+</div>
+<p>Checking socket activation</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ sudo systemctl status gunicorn_vanguard
+$ curl --unix-socket /run/gunicorn_vanguard.sock localhost
+$ sudo systemctl status gunicorn_vanguard
+$ sudo journalctl -u gunicorn_vanguard
+</pre></div>
+</div>
+<p>Reloading after making changes to service file</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ sudo systemctl daemon-reload
+$ sudo systemctl restart gunicorn_vanguard
+</pre></div>
+</div>
+</div>
+<div class="section" id="configure-nginx">
+<h2>Configure Nginx<a class="headerlink" href="#configure-nginx" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ sudo nano /etc/nginx/sites-available/vanguard
+</pre></div>
+</div>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>server <span class="o">{</span>
+    listen <span class="m">80</span><span class="p">;</span>
+    server_name clappets.com<span class="p">;</span>
+    <span class="nv">location</span> <span class="o">=</span> /favicon.ico <span class="o">{</span> access_log off<span class="p">;</span> log_not_found off<span class="p">;</span> <span class="o">}</span>
+    location /static/ <span class="o">{</span>
+      root /home/siteadmin/vanguard<span class="p">;</span>
+    <span class="o">}</span>
+    location / <span class="o">{</span>
+      include proxy_params<span class="p">;</span>
+      proxy_pass http://unix:/run/gunicorn_vanguard.sock<span class="p">;</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</pre></div>
+</div>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ sudo ln -s /etc/nginx/sites-available/vanguard /etc/nginx/sites-enabled
+$ sudo nginx -t
+$ sudo systemctl restart nginx
+$ sudo ufw delete allow <span class="m">8000</span>
+$ sudo ufw allow <span class="s1">&#39;Nginx Full&#39;</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="create-a-new-repository-and-push-to-github">
+<h2>Create a new repository and push to Github<a class="headerlink" href="#create-a-new-repository-and-push-to-github" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ <span class="nb">echo</span> <span class="s2">&quot;# vanguard&quot;</span> &gt;&gt; README.md
+$ git config --global user.email <span class="s2">&quot;raheja.sandeep@gmail.com&quot;</span>
+$ git config --global user.name <span class="s2">&quot;Sandeep Raheja&quot;</span>
+$ git init
+$ git add *
+$ git commit -m <span class="s2">&quot;django initial state&quot;</span>
+$ git remote add origin https://github.com/sandeeprah/vanguard.git
+$ git push -u origin master
+</pre></div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="initialDO_setup.html" title="previous chapter">Digital Ocean Initial Server Setup</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, Sandeep Raheja.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.7</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.8</a>
+      
+      |
+      <a href="_sources/djangoDO_setup.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -1,0 +1,42 @@
+Creating a New Django Site Droplet on DigitalOcean
+==================================================
+
+Django, Postgresql, Gunicorn and Nginx together form a formidable configuration for a webapplication server. DigitalOcean now provides a one click facility to create a new droplet with all of this setup. As prerequisite you need to have a DigitalOcean account. From the console initiate Create Droplet. For details refer to the url below:
+
+
+
+
+1. Select the image e.g. Ubuntu18.04
+2. Select the one click app option and select Django
+3. Give an easy name to the droplet which will also serve as the localhost name e.g.vanguard
+4. Do not set SSH. This way you will get the root password on your email.
+
+With the above steps, digitalocean would do an automatic setup with django, postgresql, gunicorn and nginx
+
+
+A digitalocean guide for one-click django installation can be found `here <https://www.digitalocean.com/docs/one-clicks/django/#start>`_
+
+Login from the terminal follow the procedure for initial login
+
+.. code-block:: bash
+
+  $ ssh root@droplet-ip-address
+
+You will be prompted to change the password immediately after login.
+
+When configuring the droplet few users are automatically created which are django and postgres As root user change the password of django to something you can remember:
+
+.. code-block:: bash
+
+  $ passwd django
+
+The django username and password can be used to ftp files to the server in the website
+
+In order to avoid loggin in as root, provide sudo privileges to the django user  using the command
+
+.. code-block:: bash
+
+  $ adduser siteadmin
+  $ usermod -aG sudo siteadmin
+
+https://www.digitalocean.com/community/tutorials/how-to-create-a-sudo-user-on-ubuntu-quickstart
