@@ -24,6 +24,7 @@
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Creating a New Flask Site on DigitalOcean" href="flaskDO_setup.html" />
     <link rel="prev" title="Digital Ocean Initial Server Setup" href="initialDO_setup.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
@@ -112,15 +113,15 @@ $ nano ~/vanguard/vanguard/settings.py
 </pre></div>
 </div>
 <p>complete the set up</p>
-<div class="highlight-bash"><div class="highlight"><pre><span></span><span class="o">(</span>venv<span class="o">)</span>$ ~/vanguard/manage.py makemigrations
-<span class="o">(</span>venv<span class="o">)</span>$ ~/vanguard/manage.py migrate
-<span class="o">(</span>venv<span class="o">)</span>$ ~/vanguard/manage.py createsuperuser
-<span class="o">(</span>venv<span class="o">)</span>$ ~/vanguard/manage.py collectstatic
+<div class="highlight-bash"><div class="highlight"><pre><span></span><span class="o">(</span>venv<span class="o">)</span>$ ~/vanguard/python manage.py makemigrations
+<span class="o">(</span>venv<span class="o">)</span>$ ~/vanguard/python manage.py migrate
+<span class="o">(</span>venv<span class="o">)</span>$ ~/vanguard/python manage.py createsuperuser
+<span class="o">(</span>venv<span class="o">)</span>$ ~/vanguard/python manage.py collectstatic
 </pre></div>
 </div>
 <p>configure the firewall for port 8000 and run the django development server</p>
 <div class="highlight-bash"><div class="highlight"><pre><span></span><span class="o">(</span>venv<span class="o">)</span>$ sudo ufw allow <span class="m">8000</span>
-<span class="o">(</span>venv<span class="o">)</span>$ ~/vanguard/manage.py runserver <span class="m">0</span>.0.0.0:8000
+<span class="o">(</span>venv<span class="o">)</span>$ ~/vanguard/python manage.py runserver <span class="m">0</span>.0.0.0:8000
 </pre></div>
 </div>
 </div>
@@ -247,6 +248,7 @@ $ git push -u origin master
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
       <li>Previous: <a href="initialDO_setup.html" title="previous chapter">Digital Ocean Initial Server Setup</a></li>
+      <li>Next: <a href="flaskDO_setup.html" title="next chapter">Creating a New Flask Site on DigitalOcean</a></li>
   </ul></li>
 </ul>
 </div>

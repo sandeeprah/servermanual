@@ -12,6 +12,7 @@ Welcome to Server Manual's documentation!
 
    initialDO_setup
    djangoDO_setup
+   flaskDO_setup
 
 Indices and tables
 ==================

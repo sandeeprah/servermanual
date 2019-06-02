@@ -1,0 +1,214 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Creating a New Flask Site on DigitalOcean &#8212; Server Manual 0.1 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Creating a New Django Site on DigitalOcean" href="djangoDO_setup.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="creating-a-new-flask-site-on-digitalocean">
+<h1>Creating a New Flask Site on DigitalOcean<a class="headerlink" href="#creating-a-new-flask-site-on-digitalocean" title="Permalink to this headline">¶</a></h1>
+<p><a class="reference external" href="https://www.digitalocean.com/community/tutorials/how-to-serve-flask-applications-with-gunicorn-and-nginx-on-ubuntu-18-04">Online guide to setup Flask, Gunicorn, Nginx</a></p>
+<div class="section" id="setting-up-flask">
+<h2>Setting Up Flask<a class="headerlink" href="#setting-up-flask" title="Permalink to this headline">¶</a></h2>
+<p>First login using SSH as siteadmin</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ ssh siteadmin@clappets.com
+</pre></div>
+</div>
+<p>Install all prerequisite for python3 installation</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ sudo apt update
+$ sudo apt install python3-pip python3-dev build-essential libssl-dev libffi-dev python3-setuptools
+$ sudo apt install python3-venv
+$ mkdir ~/vanguard
+$ <span class="nb">cd</span> ~/vanguard
+$ python3.6 -m venv venv
+$ <span class="nb">source</span> venv/bin/activate
+<span class="o">(</span>venv<span class="o">)</span>$ pip install wheel
+<span class="o">(</span>venv<span class="o">)</span>$ pip install gunicorn flask
+<span class="o">(</span>venv<span class="o">)</span>$ nano ~/vanguard/vanguard.py
+</pre></div>
+</div>
+<p>Add the following in vanguard.py file</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>from flask import Flask
+<span class="nv">app</span> <span class="o">=</span> Flask<span class="o">(</span>__name__<span class="o">)</span>
+
+@app.route<span class="o">(</span><span class="s2">&quot;/&quot;</span><span class="o">)</span>
+def hello<span class="o">()</span>:
+    <span class="k">return</span> <span class="s2">&quot;&lt;h1 style=&#39;color:blue&#39;&gt;Hello There!&lt;/h1&gt;&quot;</span>
+
+<span class="k">if</span> <span class="nv">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span>:
+    app.run<span class="o">(</span><span class="nv">host</span><span class="o">=</span><span class="s1">&#39;0.0.0.0&#39;</span><span class="o">)</span>
+</pre></div>
+</div>
+<p>configure the firewall for port 5000 and run flask development server</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span><span class="o">(</span>venv<span class="o">)</span>$ sudo ufw allow <span class="m">5000</span>
+<span class="o">(</span>venv<span class="o">)</span>$ python vanguard.py
+</pre></div>
+</div>
+</div>
+<div class="section" id="configure-gunicorn">
+<h2>Configure Gunicorn<a class="headerlink" href="#configure-gunicorn" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-bash"><div class="highlight"><pre><span></span><span class="o">(</span>venv<span class="o">)</span>$ nano ~/vanguard/wsgi.py
+</pre></div>
+</div>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>from vanguard import app
+
+<span class="k">if</span> <span class="nv">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span>:
+    app.run<span class="o">()</span>
+</pre></div>
+</div>
+<div class="highlight-bash"><div class="highlight"><pre><span></span><span class="o">(</span>venv<span class="o">)</span>$ <span class="nb">cd</span> ~/vanguard
+<span class="o">(</span>venv<span class="o">)</span>$ gunicorn --bind <span class="m">0</span>.0.0.0:5000 wsgi:app
+<span class="o">(</span>venv<span class="o">)</span>$ deactivate
+<span class="nv">$sudo</span> nano /etc/systemd/system/vanguard.service
+</pre></div>
+</div>
+<p>Put the following contents in the file, save and close</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span><span class="o">[</span>Unit<span class="o">]</span>
+<span class="nv">Description</span><span class="o">=</span>Gunicorn instance to serve vanguard
+<span class="nv">After</span><span class="o">=</span>network.target
+
+<span class="o">[</span>Service<span class="o">]</span>
+<span class="nv">User</span><span class="o">=</span>siteadmin
+<span class="nv">Group</span><span class="o">=</span>www-data
+<span class="nv">WorkingDirectory</span><span class="o">=</span>/home/siteadmin/vanguard
+<span class="nv">Environment</span><span class="o">=</span><span class="s2">&quot;PATH=/home/siteadmin/vanguard/venv/bin&quot;</span>
+<span class="nv">ExecStart</span><span class="o">=</span>/home/siteadmin/vanguard/venv/bin/gunicorn --workers <span class="m">3</span> --bind unix:vanguard.sock -m <span class="m">007</span> wsgi:app
+
+<span class="o">[</span>Install<span class="o">]</span>
+<span class="nv">WantedBy</span><span class="o">=</span>multi-user.target
+</pre></div>
+</div>
+<p>Start and enable the gunicorn service</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ sudo systemctl start vanguard
+$ sudo systemctl <span class="nb">enable</span> vanguard
+</pre></div>
+</div>
+</div>
+<div class="section" id="configure-nginx">
+<h2>Configure Nginx<a class="headerlink" href="#configure-nginx" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ sudo nano /etc/nginx/sites-available/vanguard
+</pre></div>
+</div>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>server <span class="o">{</span>
+    listen <span class="m">80</span><span class="p">;</span>
+    server_name clappets.com www.clappets.com<span class="p">;</span>
+
+    location / <span class="o">{</span>
+        include proxy_params<span class="p">;</span>
+        proxy_pass http://unix:/home/siteadmin/vanguard/vanguard.sock<span class="p">;</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</pre></div>
+</div>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ sudo ln -s /etc/nginx/sites-available/vanguard /etc/nginx/sites-enabled
+$ sudo nginx -t
+$ sudo systemctl restart nginx
+$ sudo ufw delete allow <span class="m">5000</span>
+$ sudo ufw allow <span class="s1">&#39;Nginx Full&#39;</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="create-a-new-repository-and-push-to-github">
+<h2>Create a new repository and push to Github<a class="headerlink" href="#create-a-new-repository-and-push-to-github" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ <span class="nb">echo</span> <span class="s2">&quot;# vanguard&quot;</span> &gt;&gt; README.md
+$ git config --global user.email <span class="s2">&quot;raheja.sandeep@gmail.com&quot;</span>
+$ git config --global user.name <span class="s2">&quot;Sandeep Raheja&quot;</span>
+$ git init
+$ git add *
+$ git commit -m <span class="s2">&quot;flask initial state&quot;</span>
+$ git remote add origin https://github.com/sandeeprah/vanguard.git
+$ git push -u origin master
+</pre></div>
+</div>
+</div>
+<div class="section" id="install-wkhtmltopdf-0-12-4-with-patched-qt">
+<h2>Install wkhtmltopdf (0.12.4) with patched Qt<a class="headerlink" href="#install-wkhtmltopdf-0-12-4-with-patched-qt" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>$ <span class="nb">cd</span> ~
+$ mkdir
+$ wget https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.4/wkhtmltox-0.12.4_linux-generic-amd64.tar.xz
+$ sudo tar xvf wkhtmltox-0.12.4_linux-generic-amd64.tar.xz
+$ sudo apt install libssl1.0-dev
+</pre></div>
+</div>
+<p>Note above, that on Ubuntu 18.04 to make https connections work you need to install libssl1.0-dev as given above.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="djangoDO_setup.html" title="previous chapter">Creating a New Django Site on DigitalOcean</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, Sandeep Raheja.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.7</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.8</a>
+      
+      |
+      <a href="_sources/flaskDO_setup.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

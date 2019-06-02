@@ -105,10 +105,10 @@ complete the set up
 
 .. code-block:: bash
 
-  (venv)$ ~/vanguard/manage.py makemigrations
-  (venv)$ ~/vanguard/manage.py migrate
-  (venv)$ ~/vanguard/manage.py createsuperuser
-  (venv)$ ~/vanguard/manage.py collectstatic
+  (venv)$ ~/vanguard/python manage.py makemigrations
+  (venv)$ ~/vanguard/python manage.py migrate
+  (venv)$ ~/vanguard/python manage.py createsuperuser
+  (venv)$ ~/vanguard/python manage.py collectstatic
 
 
 configure the firewall for port 8000 and run the django development server
@@ -116,7 +116,7 @@ configure the firewall for port 8000 and run the django development server
 .. code-block:: bash
 
   (venv)$ sudo ufw allow 8000
-  (venv)$ ~/vanguard/manage.py runserver 0.0.0.0:8000
+  (venv)$ ~/vanguard/python manage.py runserver 0.0.0.0:8000
 
 
 Configure Gunicorn
